@@ -6,4 +6,4 @@ raw_tx="01000000000101c8b0928edebbec5e698d5f86d0474595d9f6a5b2e4e3772cd9d1005f23
 txid=$(bitcoin-cli -regtest decoderawtransaction $raw_tx | jq -r '.txid')
 inputs=$(jq -n --arg txid "$txid" '[{"txid":$txid,"vout":0},{"txid":$txid,"vout":1}]')
 outputs={"2MvLcssW49n9atmksjwg2ZCMsEMsoj3pzUP":0.2}
-bitcoin-cli -regtest createrawtransaction "$inputs" "$outputs" 
+bitcoin-cli -regtest createrawtransaction "$inputs" "$outputs" 0 true 

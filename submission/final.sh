@@ -167,7 +167,7 @@ PAYMENT_ADDRESS="2MvLcssW49n9atmksjwg2ZCMsEMsoj3pzUP"
 CHANGE_ADDRESS="bcrt1qg09ftw43jvlhj4wlwwhkxccjzmda3kdm4y83ht"
 
 # STUDENT TASK: Create a proper input JSON for createrawtransaction
-TX_INPUTS=$(jq -n --arg txid "$txid" '[{"txid":$txid, "vout":0,"sequence":1},{"txid":$txid,"vout":1, "sequence":1}]')
+TX_INPUTS=$(jq -n --arg txid "$txid" '[{"txid":$txid, "vout":0,"sequence":1}]')
 check_cmd "Input JSON creation" "TX_INPUTS" "$TX_INPUTS"
 
 # Verify RBF is enabled in the input structure
@@ -179,12 +179,12 @@ fi
 
 # STUDENT TASK: Calculate the change amount
 PAYMENT_AMOUNT=15000000  # in satoshis
-CHANGE_AMOUNT=$((FIRST_OUTPUT_VALUE-PAYMENT_AMOUNT))
+CHANGE_AMOUNT=$((UTXO_VALUE-PAYMENT_AMOUNT-FEE_SATS))
 check_cmd "Change calculation" "CHANGE_AMOUNT" "$CHANGE_AMOUNT"
 
 # Convert amounts to BTC for createrawtransaction
-PAYMENT_BTC=$((PAYMENT_AMOUNT*100000000))
-CHANGE_BTC=$((CHANGE_AMOUNT*100000000))
+PAYMENT_BTC=$((PAYMENT_AMOUNT/100000000))
+CHANGE_BTC=$((CHANGE_AMOUNT/100000000))
 
 # STUDENT TASK: Create the outputs JSON structure
 TX_OUTPUTS='{"2MvLcssW49n9atmksjwg2ZCMsEMsoj3pzUP":"$PAYMENT_BTC" ,"bcrt1qg09ftw43jvlhj4wlwwhkxccjzmda3kdm4y83ht":"$CHANGE_BTC" }'

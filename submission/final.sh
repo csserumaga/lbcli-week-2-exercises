@@ -183,11 +183,11 @@ CHANGE_AMOUNT=$((UTXO_VALUE-PAYMENT_AMOUNT-FEE_SATS))
 check_cmd "Change calculation" "CHANGE_AMOUNT" "$CHANGE_AMOUNT"
 
 # Convert amounts to BTC for createrawtransaction
-PAYMENT_BTC=$((awk("BEGIN Printf \"%8.f\" PAYMENT_AMOUNT/100000000))
-CHANGE_BTC=$((CHANGE_AMOUNT/100000000))
+PAYMENT_BTC=$(awk "BEGIN { printf \"%.8f\", $PAYMENT_AMOUNT/100000000}")
+CHANGE_BTC=$(awk "BEGIN { printf \"%.8f\", $CHANGE_AMOUNT/100000000}")
 
 # STUDENT TASK: Create the outputs JSON structure
-TX_OUTPUTS='{"2MvLcssW49n9atmksjwg2ZCMsEMsoj3pzUP":"$PAYMENT_BTC" ,"bcrt1qg09ftw43jvlhj4wlwwhkxccjzmda3kdm4y83ht":"$CHANGE_BTC" }'
+TX_OUTPUTS="{\"2MvLcssW49n9atmksjwg2ZCMsEMsoj3pzUP\":$PAYMENT_BTC,\"bcrt1qg09ftw43jvlhj4wlwwhkxccjzmda3kdm4y83ht\":$CHANGE_BTC}"
 check_cmd "Output JSON creation" "TX_OUTPUTS" "$TX_OUTPUTS"
 
 # STUDENT TASK: Create the raw transaction
@@ -209,18 +209,18 @@ echo ""
 
 # STUDENT TASK: Decode the raw transaction
 # WRITE YOUR SOLUTION BELOW:
-DECODED_TX=
+DECODED_TX=$(bitcoin-cli -regtest decoderawtransaction "$RAW_TX")
 check_cmd "Transaction decoding" "DECODED_TX" "$DECODED_TX"
 
 # STUDENT TASK: Extract and verify the key components from the decoded transaction
 # WRITE YOUR SOLUTION BELOW:
-VERIFY_RBF=
+VERIFY_RBF=$(echo "$DECODED_TX" | jq -r 'if ([.vin[].sequence] | min) < 4294967294 then "true" else "false" end')
 check_cmd "RBF verification" "VERIFY_RBF" "$VERIFY_RBF"
 
-VERIFY_PAYMENT=
+VERIFY_PAYMENT=$(echo "$DECODED_TX" | jq -r --arg addr "$PAYMENT_ADDRESS" '.vout[] | select((.scriptPubKey.address? == $addr) or (.scriptPubKey.addresses[]? == $addr)) | .value' | awk '{printf "%.8f", $1}')
 check_cmd "Payment verification" "VERIFY_PAYMENT" "$VERIFY_PAYMENT"
 
-VERIFY_CHANGE=
+VERIFY_CHANGE=$(echo "$DECODED_TX" | jq -r --arg addr "$CHANGE_ADDRESS" '.vout[] | select((.scriptPubKey.address? == $addr) or (.scriptPubKey.addresses[]? == $addr)) | .value' | awk '{printf "%.8f", $1}')
 check_cmd "Change verification" "VERIFY_CHANGE" "$VERIFY_CHANGE"
 
 echo "Verification Results:"
@@ -256,7 +256,7 @@ SIMPLE_TX_INPUTS='[{"txid":"'$TXID'","vout":0,"sequence":4294967293}]'
 SIMPLE_TX_OUTPUTS='{"'$TEST_ADDRESS'":0.0001}'
 
 # Create a raw transaction for signing using the SIMPLE_TX_INPUTS and SIMPLE_TX_OUTPUTS
-SIMPLE_RAW_TX=
+SIMPLE_RAW_TX=$(bitcoin-cli -regtest createrawtransaction "$SIMPLE_TX_INPUTS" "$SIMPLE_TX_OUTPUTS")
 check_cmd "Simple transaction creation" "SIMPLE_RAW_TX" "$SIMPLE_RAW_TX"
 
 echo "Simple transaction created: ${SIMPLE_RAW_TX:0:64}... (truncated)"

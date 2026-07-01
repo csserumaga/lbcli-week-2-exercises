@@ -183,7 +183,7 @@ CHANGE_AMOUNT=$((UTXO_VALUE-PAYMENT_AMOUNT-FEE_SATS))
 check_cmd "Change calculation" "CHANGE_AMOUNT" "$CHANGE_AMOUNT"
 
 # Convert amounts to BTC for createrawtransaction
-PAYMENT_BTC=$((PAYMENT_AMOUNT/100000000))
+PAYMENT_BTC=$((awk("BEGIN Printf \"%8.f\" PAYMENT_AMOUNT/100000000))
 CHANGE_BTC=$((CHANGE_AMOUNT/100000000))
 
 # STUDENT TASK: Create the outputs JSON structure
